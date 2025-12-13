@@ -16,6 +16,24 @@ app = typer.Typer(
     help="sysforge — collect environment data, run health checks, and write reports.",
 )
 
+def exit_code_from_summary(summary: object) -> int:
+    if not isinstance(summary, dict):
+        return 2
+    warn = summary.get("warn")
+    fail = summary.get("fail")
+    if (
+        not isinstance(warn, int)
+        or isinstance(warn, bool)
+        or not isinstance(fail, int)
+        or isinstance(fail, bool)
+    ):
+        return 2
+    if fail > 0:
+        return 2
+    if warn > 0:
+        return 1
+    return 0
+
 
 def _validate_threshold(value: float) -> float:
     if not 0.0 <= value <= 1.0:
@@ -112,8 +130,9 @@ def doctor(
     else:
         typer.echo(json_dump(checks, pretty=pretty))
 
-    if checks["summary"]["fail"] > 0:
-        raise typer.Exit(code=1)
+    exit_code = exit_code_from_summary(checks.get("summary"))
+    if exit_code:
+        raise typer.Exit(code=exit_code)
 
 
 @app.command()
@@ -151,10 +170,15 @@ def report(
         typer.echo(f"Failed to write report: {exc}", err=True)
         raise typer.Exit(code=1) from exc
 
-    summary = report_data["checks"]["summary"]
-    typer.echo(
-        f"Summary: {summary['pass']} pass, {summary['warn']} warn, {summary['fail']} fail",
-        file=sys.stderr,
-    )
-    if summary["fail"] > 0:
-        raise typer.Exit(code=1)
+    try:
+        summary = report_data["checks"]["summary"]
+        typer.echo(
+            f"Summary: {summary['pass']} pass, {summary['warn']} warn, {summary['fail']} fail",
+            file=sys.stderr,
+        )
+    except Exception:
+        raise typer.Exit(code=2)
+
+    exit_code = exit_code_from_summary(summary)
+    if exit_code:
+        raise typer.Exit(code=exit_code)

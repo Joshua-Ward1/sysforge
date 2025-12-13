@@ -47,6 +47,11 @@ Example `sysforge doctor` output:
 }
 ```
 
+Exit codes (for `sysforge doctor` and `sysforge report`):
+- `0`: all checks pass (`warn=0`, `fail=0`)
+- `1`: warnings only (`warn>0`, `fail=0`)
+- `2`: any failures (`fail>0`)
+
 ## Development
 ```bash
 python3 -m venv .venv

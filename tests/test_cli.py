@@ -36,6 +36,15 @@ def test_doctor_failure_exit(monkeypatch) -> None:
         lambda disk_threshold: {"results": [], "summary": {"pass": 0, "warn": 0, "fail": 1}},
     )
     result = runner.invoke(app, ["doctor"])
+    assert result.exit_code == 2
+
+
+def test_doctor_warn_exit(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "sysforge.cli.run_checks",
+        lambda disk_threshold: {"results": [], "summary": {"pass": 0, "warn": 1, "fail": 0}},
+    )
+    result = runner.invoke(app, ["doctor"])
     assert result.exit_code == 1
 
 
@@ -68,3 +77,33 @@ def test_report_writes_combined(monkeypatch, tmp_path: Path) -> None:
     data = json.loads(report_path.read_text())
     assert data["collected"]["ok"] is True
     assert "summary" in result.stderr.lower()
+
+
+def test_report_warn_exit(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(
+        "sysforge.cli.assemble_report",
+        lambda disk_threshold: {
+            "timestamp": "2025-01-01T00:00:00Z",
+            "collected": {"ok": True},
+            "checks": {"results": [], "summary": {"pass": 0, "warn": 1, "fail": 0}},
+        },
+    )
+    report_path = tmp_path / "report.json"
+    result = runner.invoke(app, ["report", "--output", str(report_path)])
+    assert result.exit_code == 1
+    assert report_path.exists()
+
+
+def test_report_fail_exit(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(
+        "sysforge.cli.assemble_report",
+        lambda disk_threshold: {
+            "timestamp": "2025-01-01T00:00:00Z",
+            "collected": {"ok": True},
+            "checks": {"results": [], "summary": {"pass": 0, "warn": 0, "fail": 1}},
+        },
+    )
+    report_path = tmp_path / "report.json"
+    result = runner.invoke(app, ["report", "--output", str(report_path)])
+    assert result.exit_code == 2
+    assert report_path.exists()
