@@ -21,7 +21,7 @@ def get_checks() -> list[BaseCheck]:
     return list(_check_registry)
 
 
-def run_checks(*, disk_threshold: float) -> dict[str, object]:
+def run_checks(*, disk_threshold: float = 0.10) -> dict[str, object]:
     """
     Execute all registered checks and return results plus summary counts.
     """

@@ -37,7 +37,7 @@ def test_disk_usage_summary_structure(tmp_path: Path, monkeypatch: pytest.Monkey
     assert result["percent_free"] == pytest.approx(0.6)
 
 
-def shutil_fake_usage(total: int, used: int, free: int):
+def shutil_fake_usage(total: int, used: int, free: int) -> Usage:
     class Usage:
         def __init__(self, total: int, used: int, free: int):
             self.total = total

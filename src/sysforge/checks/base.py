@@ -29,5 +29,5 @@ class BaseCheck(ABC):
     name: str
 
     @abstractmethod
-    def run(self, *, disk_threshold: float) -> CheckResult:
+    def run(self, *, disk_threshold: float = 0.10) -> CheckResult:
         raise NotImplementedError

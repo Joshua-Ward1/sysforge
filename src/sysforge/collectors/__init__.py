@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import warnings
+
 from .base import BaseCollector
 
 _collector_registry: list[BaseCollector] = []
@@ -10,6 +12,10 @@ def register_collector(collector: BaseCollector) -> None:
     Register a collector instance.
     """
     if any(existing.name == collector.name for existing in _collector_registry):
+        warnings.warn(
+            f"Collector {collector.name!r} is already registered; ignoring duplicate.",
+            stacklevel=2,
+        )
         return
     _collector_registry.append(collector)
 

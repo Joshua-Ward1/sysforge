@@ -39,6 +39,20 @@ def test_doctor_failure_exit(monkeypatch) -> None:
     assert result.exit_code == 1
 
 
+def test_doctor_respects_pretty_option(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(
+        "sysforge.cli.run_checks",
+        lambda disk_threshold: {"results": [], "summary": {"pass": 1, "warn": 0, "fail": 0}},
+    )
+    out_path = tmp_path / "doctor.json"
+
+    result = runner.invoke(app, ["doctor", "--output", str(out_path), "--pretty"])
+    assert result.exit_code == 0
+    content = out_path.read_text()
+    assert content.startswith("{\n")
+    assert '  "summary"' in content
+
+
 def test_report_writes_combined(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(
         "sysforge.cli.assemble_report",

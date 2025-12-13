@@ -76,6 +76,7 @@ def collect(
 
 @app.command()
 def doctor(
+    pretty: bool = typer.Option(False, "--pretty", help="Pretty-print JSON output."),
     disk_threshold: float = typer.Option(
         0.10,
         "--disk-threshold",
@@ -103,13 +104,13 @@ def doctor(
 
     if output:
         try:
-            write_report_file(checks, output, pretty=False)
+            write_report_file(checks, output, pretty=pretty)
             typer.echo(f"Wrote doctor results to {output}")
         except Exception as exc:  # pragma: no cover - defensive
             typer.echo(f"Failed to write output: {exc}", err=True)
             raise typer.Exit(code=1) from exc
     else:
-        typer.echo(json_dump(checks, pretty=True))
+        typer.echo(json_dump(checks, pretty=pretty))
 
     if checks["summary"]["fail"] > 0:
         raise typer.Exit(code=1)

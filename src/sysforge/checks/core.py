@@ -7,18 +7,20 @@ from pathlib import Path
 from ..utils import disk_usage_summary
 from .base import BaseCheck, CheckResult
 
+WARN_THRESHOLD_MARGIN = 0.05
+
 
 class DiskSpaceCheck(BaseCheck):
     name = "disk_space"
 
-    def run(self, *, disk_threshold: float) -> CheckResult:
+    def run(self, *, disk_threshold: float = 0.10) -> CheckResult:
         usage = disk_usage_summary(Path.home())
         percent_free = usage["percent_free"]
 
         if percent_free <= disk_threshold:
             status = "fail"
             message = f"Low disk space: {percent_free:.2%} free (<= {disk_threshold:.0%})"
-        elif percent_free <= disk_threshold + 0.05:
+        elif percent_free <= disk_threshold + WARN_THRESHOLD_MARGIN:
             status = "warn"
             message = f"Disk space is getting low: {percent_free:.2%} free"
         else:
@@ -31,7 +33,7 @@ class DiskSpaceCheck(BaseCheck):
 class GitInstalledCheck(BaseCheck):
     name = "git_installed"
 
-    def run(self, *, disk_threshold: float) -> CheckResult:  # disk_threshold unused
+    def run(self, *, disk_threshold: float = 0.10) -> CheckResult:  # disk_threshold unused
         found = shutil.which("git") is not None
         if found:
             return CheckResult(
@@ -49,7 +51,7 @@ class GitInstalledCheck(BaseCheck):
 class PythonVersionCheck(BaseCheck):
     name = "python_version"
 
-    def run(self, *, disk_threshold: float) -> CheckResult:  # disk_threshold unused
+    def run(self, *, disk_threshold: float = 0.10) -> CheckResult:  # disk_threshold unused
         version_info = sys.version_info
         meets_requirement = version_info.major > 3 or (
             version_info.major == 3 and version_info.minor >= 11
