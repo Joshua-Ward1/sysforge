@@ -24,7 +24,7 @@ class SystemCollector(BaseCollector):
         python_info = {
             "version": platform.python_version(),
             "implementation": platform.python_implementation(),
-            "executable": os.fsdecode(sys.executable or ""),
+            "executable": os.fsdecode(sys.executable) if sys.executable is not None else None,
         }
         hardware: dict[str, Any] = {"cpu_count": os.cpu_count()}
         mem_bytes = memory_bytes()
