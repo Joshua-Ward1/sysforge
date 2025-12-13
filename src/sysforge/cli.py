@@ -17,6 +17,7 @@ app = typer.Typer(
 )
 
 def exit_code_from_summary(summary: object) -> int:
+    """Map doctor `summary` to CLI exit codes (0=pass, 1=warn-only, 2=fail or malformed)."""
     if not isinstance(summary, dict):
         return 2
     warn = summary.get("warn")
