@@ -84,6 +84,15 @@ def test_doctor_malformed_summary_missing_keys_exits_2(monkeypatch) -> None:
     assert result.exit_code == 2
 
 
+def test_doctor_malformed_summary_wrong_types_exits_2(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "sysforge.cli.run_checks",
+        lambda disk_threshold: {"results": [], "summary": {"warn": "1", "fail": 0}},
+    )
+    result = runner.invoke(app, ["doctor"])
+    assert result.exit_code == 2
+
+
 def test_doctor_respects_pretty_option(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(
         "sysforge.cli.run_checks",
