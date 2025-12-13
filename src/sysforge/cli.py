@@ -16,8 +16,13 @@ app = typer.Typer(
     help="sysforge — collect environment data, run health checks, and write reports.",
 )
 
-def exit_code_from_summary(summary: object) -> int:
-    """Map doctor `summary` to CLI exit codes (0=pass, 1=warn-only, 2=fail or malformed)."""
+def _exit_code_from_summary(summary: object) -> int:
+    """Map doctor `summary` to CLI exit codes.
+
+    - 0: all checks pass
+    - 1: warnings only
+    - 2: failures OR malformed/missing summary data
+    """
     if not isinstance(summary, dict):
         return 2
     warn = summary.get("warn")
@@ -131,7 +136,7 @@ def doctor(
     else:
         typer.echo(json_dump(checks, pretty=pretty))
 
-    exit_code = exit_code_from_summary(checks.get("summary"))
+    exit_code = _exit_code_from_summary(checks.get("summary"))
     if exit_code:
         raise typer.Exit(code=exit_code)
 
@@ -180,6 +185,6 @@ def report(
     except Exception:
         raise typer.Exit(code=2)
 
-    exit_code = exit_code_from_summary(summary)
+    exit_code = _exit_code_from_summary(summary)
     if exit_code:
         raise typer.Exit(code=exit_code)

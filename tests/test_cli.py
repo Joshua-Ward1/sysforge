@@ -48,6 +48,42 @@ def test_doctor_warn_exit(monkeypatch) -> None:
     assert result.exit_code == 1
 
 
+def test_doctor_malformed_summary_not_dict_exits_2(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "sysforge.cli.run_checks",
+        lambda disk_threshold: {"results": [], "summary": None},
+    )
+    result = runner.invoke(app, ["doctor"])
+    assert result.exit_code == 2
+
+
+def test_doctor_malformed_summary_string_exits_2(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "sysforge.cli.run_checks",
+        lambda disk_threshold: {"results": [], "summary": "bad"},
+    )
+    result = runner.invoke(app, ["doctor"])
+    assert result.exit_code == 2
+
+
+def test_doctor_malformed_summary_bool_values_exits_2(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "sysforge.cli.run_checks",
+        lambda disk_threshold: {"results": [], "summary": {"pass": 0, "warn": True, "fail": False}},
+    )
+    result = runner.invoke(app, ["doctor"])
+    assert result.exit_code == 2
+
+
+def test_doctor_malformed_summary_missing_keys_exits_2(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "sysforge.cli.run_checks",
+        lambda disk_threshold: {"results": [], "summary": {}},
+    )
+    result = runner.invoke(app, ["doctor"])
+    assert result.exit_code == 2
+
+
 def test_doctor_respects_pretty_option(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(
         "sysforge.cli.run_checks",
@@ -101,6 +137,21 @@ def test_report_fail_exit(monkeypatch, tmp_path: Path) -> None:
             "timestamp": "2025-01-01T00:00:00Z",
             "collected": {"ok": True},
             "checks": {"results": [], "summary": {"pass": 0, "warn": 0, "fail": 1}},
+        },
+    )
+    report_path = tmp_path / "report.json"
+    result = runner.invoke(app, ["report", "--output", str(report_path)])
+    assert result.exit_code == 2
+    assert report_path.exists()
+
+
+def test_report_malformed_summary_exits_2_and_writes_file(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(
+        "sysforge.cli.assemble_report",
+        lambda disk_threshold: {
+            "timestamp": "2025-01-01T00:00:00Z",
+            "collected": {"ok": True},
+            "checks": {"results": [], "summary": {}},
         },
     )
     report_path = tmp_path / "report.json"
