@@ -11,7 +11,8 @@ Modular system diagnostics and analysis CLI. Collects environment data, runs hea
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
-pip install -e ".[dev]"
+python -m pip install -U pip
+python -m pip install -e ".[dev]"
 ```
 
 ## Usage
@@ -56,10 +57,17 @@ Exit codes (for `sysforge doctor` and `sysforge report`):
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
-pip install -e ".[dev]"
-pip install pre-commit
+python -m pip install -U pip
+python -m pip install -e ".[dev]"
+python -m pip install -U pre-commit
 pre-commit install
 pre-commit run --all-files  # optional: run on demand
-ruff check .
-pytest
+```
+
+Run the same checks locally that CI performs:
+```bash
+python -m ruff format --check .
+python -m ruff check .
+python -m pytest -q
+sysforge --version
 ```
