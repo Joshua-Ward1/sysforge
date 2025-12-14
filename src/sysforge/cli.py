@@ -16,6 +16,7 @@ app = typer.Typer(
     help="sysforge — collect environment data, run health checks, and write reports.",
 )
 
+
 def _exit_code_from_summary(summary: object) -> int:
     """Map doctor `summary` to CLI exit codes.
 
