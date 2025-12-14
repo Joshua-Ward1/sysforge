@@ -39,9 +39,9 @@ jobs:
 
       - name: Smoke
         run: |
-          sysforge --version
-          sysforge doctor
-          sysforge collect --pretty
+          python -m sysforge --version
+          python -m sysforge doctor
+          python -m sysforge collect --pretty
 
       - name: Tests
         run: python -m pytest -q
