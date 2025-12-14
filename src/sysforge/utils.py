@@ -25,6 +25,14 @@ def write_json_file(data: Any, path: Path, *, pretty: bool = False) -> None:
     path.write_text(json_dump(data, pretty=pretty))
 
 
+def write_text_file(text: str, path: Path) -> None:
+    """
+    Write raw text data to disk, creating parent directories if needed.
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text)
+
+
 def iso_timestamp() -> str:
     """
     Return an ISO 8601 timestamp in UTC.
