@@ -60,8 +60,3 @@ pip install -e ".[dev]"
 ruff check .
 pytest
 ```
-
-## Next steps
-- Add more collectors (network, GPU, package manager info) and checks (network reachability, service statuses).
-- Add configurable thresholds and profiles for CI vs. local runs.
-- Export additional formats (Markdown summary) and optional anonymization.
