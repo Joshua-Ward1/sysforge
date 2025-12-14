@@ -57,6 +57,9 @@ Exit codes (for `sysforge doctor` and `sysforge report`):
 python3 -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
 pip install -e ".[dev]"
+pip install pre-commit
+pre-commit install
+pre-commit run --all-files  # optional: run on demand
 ruff check .
 pytest
 ```
