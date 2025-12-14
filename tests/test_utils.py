@@ -9,6 +9,13 @@ import pytest
 from sysforge import utils
 
 
+class FakeDiskUsage:
+    def __init__(self, total: int, used: int, free: int) -> None:
+        self.total = total
+        self.used = used
+        self.free = free
+
+
 def test_safe_env_summary_filters(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("PATH", "/tmp/bin")
     monkeypatch.setenv("USER", "tester")
@@ -38,14 +45,8 @@ def test_disk_usage_summary_structure(tmp_path: Path, monkeypatch: pytest.Monkey
     assert result["percent_free"] == pytest.approx(0.6)
 
 
-def shutil_fake_usage(total: int, used: int, free: int) -> Usage:
-    class Usage:
-        def __init__(self, total: int, used: int, free: int):
-            self.total = total
-            self.used = used
-            self.free = free
-
-    return Usage(total, used, free)
+def shutil_fake_usage(total: int, used: int, free: int) -> FakeDiskUsage:
+    return FakeDiskUsage(total, used, free)
 
 
 def test_json_dump_pretty_and_default_serializer() -> None:
@@ -93,7 +94,7 @@ def test_memory_bytes_windows_path(monkeypatch: pytest.MonkeyPatch) -> None:
 
     class FakeKernel32:
         def GlobalMemoryStatusEx(self, status: object) -> None:
-            setattr(status, "total_physical", 1234)
+            status.total_physical = 1234
 
     fake_ctypes.Structure = FakeStructure
     fake_ctypes.sizeof = fake_sizeof

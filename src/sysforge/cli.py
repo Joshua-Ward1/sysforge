@@ -8,7 +8,7 @@ import typer
 from . import __version__
 from .checks import run_checks
 from .collectors import run_collectors
-from .reporting import assemble_report, write_report_file
+from .reporting import assemble_report, write_report_file, write_report_markdown
 from .utils import json_dump
 
 app = typer.Typer(
@@ -45,6 +45,13 @@ def _validate_threshold(value: float) -> float:
     if not 0.0 <= value <= 1.0:
         raise typer.BadParameter("disk-threshold must be between 0.0 and 1.0")
     return value
+
+
+def _validate_report_format(value: str) -> str:
+    normalized = value.lower()
+    if normalized not in {"json", "md"}:
+        raise typer.BadParameter("format must be either 'json' or 'md'")
+    return normalized
 
 
 @app.callback(invoke_without_command=True)
@@ -143,14 +150,21 @@ def doctor(
 
 @app.command()
 def report(
-    output: Path = typer.Option(
-        Path("./sysforge-report.json"),
+    output: Path | None = typer.Option(
+        None,
         "--output",
         "-o",
         help="File path for the combined report.",
         path_type=Path,
     ),
     pretty: bool = typer.Option(False, "--pretty", help="Pretty-print JSON in the file."),
+    output_format: str = typer.Option(
+        "json",
+        "--format",
+        "-f",
+        help="Report output format.",
+        callback=_validate_report_format,
+    ),
     disk_threshold: float = typer.Option(
         0.10,
         "--disk-threshold",
@@ -163,15 +177,25 @@ def report(
     """
     Collect system data, run checks, and write a combined report.
     """
+    report_format = output_format
+
     try:
         report_data = assemble_report(disk_threshold=disk_threshold)
     except Exception as exc:  # pragma: no cover - defensive
         typer.echo(f"Error generating report: {exc}", err=True)
         raise typer.Exit(code=1) from exc
 
+    output_path = output
+    if output_path is None:
+        default_name = "sysforge-report.md" if report_format == "md" else "sysforge-report.json"
+        output_path = Path(default_name)
+
     try:
-        write_report_file(report_data, output, pretty=pretty)
-        typer.echo(f"Wrote report to {output}")
+        if report_format == "md":
+            write_report_markdown(report_data, output_path)
+        else:
+            write_report_file(report_data, output_path, pretty=pretty)
+        typer.echo(f"Wrote report to {output_path}")
     except Exception as exc:  # pragma: no cover - defensive
         typer.echo(f"Failed to write report: {exc}", err=True)
         raise typer.Exit(code=1) from exc
@@ -182,8 +206,8 @@ def report(
             f"Summary: {summary['pass']} pass, {summary['warn']} warn, {summary['fail']} fail",
             file=sys.stderr,
         )
-    except Exception:
-        raise typer.Exit(code=2)
+    except Exception as exc:
+        raise typer.Exit(code=2) from exc
 
     exit_code = _exit_code_from_summary(summary)
     if exit_code:

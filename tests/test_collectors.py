@@ -23,7 +23,10 @@ def test_system_collector_collects_expected_payload(monkeypatch: pytest.MonkeyPa
     monkeypatch.setattr("sysforge.collectors.system.platform.platform", lambda: "TestOS-1.0")
     monkeypatch.setattr("sysforge.collectors.system.platform.machine", lambda: "x86_64")
     monkeypatch.setattr("sysforge.collectors.system.platform.python_version", lambda: "3.11.5")
-    monkeypatch.setattr("sysforge.collectors.system.platform.python_implementation", lambda: "CPython")
+    monkeypatch.setattr(
+        "sysforge.collectors.system.platform.python_implementation",
+        lambda: "CPython",
+    )
     monkeypatch.setattr("sysforge.collectors.system.sys.executable", "/usr/bin/python")
     monkeypatch.setattr("sysforge.collectors.system.os.cpu_count", lambda: 8)
     monkeypatch.setattr("sysforge.collectors.system.memory_bytes", lambda: 1024)
@@ -70,7 +73,10 @@ def test_system_collector_omits_memory_when_unknown(monkeypatch: pytest.MonkeyPa
     monkeypatch.setattr("sysforge.collectors.system.platform.platform", lambda: "TestOS-1.0")
     monkeypatch.setattr("sysforge.collectors.system.platform.machine", lambda: "arm64")
     monkeypatch.setattr("sysforge.collectors.system.platform.python_version", lambda: "3.11.5")
-    monkeypatch.setattr("sysforge.collectors.system.platform.python_implementation", lambda: "CPython")
+    monkeypatch.setattr(
+        "sysforge.collectors.system.platform.python_implementation",
+        lambda: "CPython",
+    )
     monkeypatch.setattr("sysforge.collectors.system.sys.executable", "/usr/bin/python")
     monkeypatch.setattr("sysforge.collectors.system.os.cpu_count", lambda: 4)
     monkeypatch.setattr("sysforge.collectors.system.memory_bytes", lambda: None)
