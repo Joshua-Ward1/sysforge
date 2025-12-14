@@ -167,3 +167,50 @@ def test_report_malformed_summary_exits_2_and_writes_file(monkeypatch, tmp_path:
     result = runner.invoke(app, ["report", "--output", str(report_path)])
     assert result.exit_code == 2
     assert report_path.exists()
+
+
+def test_report_markdown_output(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr("sysforge.reporting.iso_timestamp", lambda: "2024-01-01T00:00:00Z")
+    monkeypatch.setattr(
+        "sysforge.reporting.run_collectors",
+        lambda: {
+            "system": {
+                "os": {"name": "TestOS", "release": "1.0", "version": "build-1", "machine": "x86"},
+                "python": {
+                    "version": "3.11.0",
+                    "implementation": "CPython",
+                    "executable": "/usr/bin/python",
+                },
+                "hardware": {"cpu_count": 4, "memory_bytes": 1024},
+                "disk": {"path": "/tmp", "free_bytes": 500, "percent_free": 0.5},
+            }
+        },
+    )
+
+    def fake_run_checks(*, disk_threshold: float) -> dict[str, object]:
+        return {
+            "results": [
+                {"name": "disk", "status": "pass", "message": "ok"},
+                {"name": "python", "status": "pass", "message": "current"},
+            ],
+            "summary": {"pass": 2, "warn": 0, "fail": 0},
+        }
+
+    monkeypatch.setattr("sysforge.reporting.run_checks", fake_run_checks)
+
+    out_path = tmp_path / "report.md"
+    result = runner.invoke(app, ["report", "--format", "md", "--output", str(out_path)])
+    assert result.exit_code == 0
+    content = out_path.read_text()
+    assert "# sysforge report" in content
+    assert "## System" in content
+    assert "## Python" in content
+    assert "## Doctor Results" in content
+    assert "## Summary" in content
+
+
+def test_report_rejects_invalid_format() -> None:
+    result = runner.invoke(app, ["report", "--format", "xml"])
+    assert result.exit_code != 0
+    assert "format must be either" in result.stderr
+    assert "'json' or 'md'" in result.stderr
