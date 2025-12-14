@@ -29,13 +29,13 @@ def write_report_file(data: dict[str, Any], path: Path, *, pretty: bool = False)
 
 
 def _format_bytes(value: Any) -> str:
-    if isinstance(value, (int, float)):
+    if isinstance(value, int | float):
         return f"{int(value):,} bytes"
     return "unknown"
 
 
 def _format_percent(value: Any) -> str:
-    if isinstance(value, (int, float)):
+    if isinstance(value, int | float):
         return f"{value * 100:.1f}%"
     return "unknown"
 
