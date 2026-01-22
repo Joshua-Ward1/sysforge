@@ -27,11 +27,14 @@ def _exit_code_from_summary(summary: object) -> int:
         return 2
     warn = summary.get("warn")
     fail = summary.get("fail")
+    passed = summary.get("pass")
     if (
         not isinstance(warn, int)
         or isinstance(warn, bool)
         or not isinstance(fail, int)
         or isinstance(fail, bool)
+        or not isinstance(passed, int)
+        or isinstance(passed, bool)
     ):
         return 2
     if fail > 0:

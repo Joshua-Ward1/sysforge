@@ -58,3 +58,15 @@ def test_disk_space_check_statuses(monkeypatch: pytest.MonkeyPatch) -> None:
         lambda _: fake_usage(0.5),
     )
     assert DiskSpaceCheck().run(disk_threshold=0.1).status == "pass"
+
+    monkeypatch.setattr(
+        "sysforge.checks.core.disk_usage_summary",
+        lambda _: fake_usage(0.15),
+    )
+    assert DiskSpaceCheck().run(disk_threshold=0.1).status == "warn"
+
+    monkeypatch.setattr(
+        "sysforge.checks.core.disk_usage_summary",
+        lambda _: fake_usage(0.151),
+    )
+    assert DiskSpaceCheck().run(disk_threshold=0.1).status == "pass"

@@ -17,10 +17,12 @@ class DiskSpaceCheck(BaseCheck):
         usage = disk_usage_summary(Path.home())
         percent_free = usage["percent_free"]
 
+        warn_limit = min(disk_threshold + WARN_THRESHOLD_MARGIN, 1.0)
+
         if percent_free <= disk_threshold:
             status = "fail"
             message = f"Low disk space: {percent_free:.2%} free (<= {disk_threshold:.0%})"
-        elif percent_free <= disk_threshold + WARN_THRESHOLD_MARGIN:
+        elif percent_free <= warn_limit:
             status = "warn"
             message = f"Disk space is getting low: {percent_free:.2%} free"
         else:
